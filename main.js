@@ -116,13 +116,22 @@ function moveBall() {
     // detect collisions with walls
     if (ballY - 10 <= 0 || ballY + 10 >= height) {
         velY *= -1
+        console.log('game over')
     }
     if (ballX - 10 < 0 || ballX + 10 > width) {
         velX *= -1
     }
     // detect collisions with paddle
-    if ((ballY - 5 > height - margin - paddleHeight) && (ballX > width - paddlePos || ballX < width - paddlePos - paddleWidth)) {
-        velY *= -1
+    const paddleRight = paddlePos + paddleWidth;
+    const paddleLeft = paddlePos
+    if ((ballX - 10) >= (paddleLeft) && (ballX + 10) <= (paddleRight)) {
+        if (ballY + 10 >= height - margin - paddleHeight) {
+            // sometimes if the ball barely collides with paddle, it will bounce along the perimeter of the paddle
+            // lets just force an upward velocity after colliding
+            //velY *= -1
+            velY = Math.abs(velY) * -1
+        }
+
     }
     // detect collision with bricks
     bricks.filter(b => !b.hit).forEach(brick => {
