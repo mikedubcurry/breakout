@@ -43,10 +43,33 @@ let bricks = []
 
 let keys = {};
 
+class Brick {
+    constructor(col, row, height, width, gap, margin) {
+        this.col = col
+        this.row = row
+        this.height = height
+        this.width = width
+        this.gap = gap
+        this.margin = margin
+        this.hit = false
+
+    }
+
+    getRect() {
+        return {
+            x: this.margin + (this.col - 1) * this.width + (this.col - 1) * this.gap,
+            y: this.margin + (this.row - 1) * this.height + (this.row - 1) * this.gap,
+            width: this.width,
+            height: this.height
+        }
+    }
+}
+
 function initBricks() {
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 4; j++) {
-            bricks.push({ col: i + 1, row: j + 1, hit: false })
+            const brick = new Brick(i + 1, j + 1, brickHeight, brickWidth, gap, margin)
+            bricks.push(brick)
         }
     }
 }
@@ -54,9 +77,8 @@ function initBricks() {
 function drawBricks() {
     ctx.fillStyle = 'orange'
     bricks.filter(b => !b.hit).forEach(brick => {
-        const x = margin + (brick.col - 1) * gap + (brick.col - 1) * brickWidth;
-        const y = margin + (brick.row - 1) * gap + (brick.row - 1) * brickHeight;
-        ctx.fillRect(x, y, brickWidth, brickHeight)
+        const { x, y, width, height } = brick.getRect()
+        ctx.fillRect(x, y, width, height)
     })
 }
 
@@ -99,9 +121,19 @@ function moveBall() {
         velX *= -1
     }
     // detect collisions with paddle
-    if((ballY - 5 > height - margin - paddleHeight) && (ballX > width - paddlePos || ballX < width - paddlePos - paddleWidth)) {
+    if ((ballY - 5 > height - margin - paddleHeight) && (ballX > width - paddlePos || ballX < width - paddlePos - paddleWidth)) {
         velY *= -1
     }
+    // detect collision with bricks
+    bricks.filter(b => !b.hit).forEach(brick => {
+        const { x, y, width, height } = brick.getRect();
+        if (ballY - 10 < y + height && ballY + 10 > y) {
+            if (ballX - 10 < x + width && ballX + 10 > x) {
+                velY *= -1
+                brick.hit = true
+            }
+        }
+    })
 }
 
 function pause() {
